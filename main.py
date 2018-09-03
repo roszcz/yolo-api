@@ -4,6 +4,8 @@ import numpy as np
 from flask import Flask
 from flask import request
 from flask import jsonify
+from utils import image as ui
+from utils import database as ud
 from pydarknet import Detector, Image
 
 def get_detector():
@@ -39,22 +41,29 @@ def detect_objects():
 
     # There are better ways to do this: e.g. xxhash
     # May not be worth the struggle for image-sized arrays
-    img_hash = hash(img.tostring())
+    image_hash = ui.make_hash(img)
 
-    # Infere
-    yolo_image = Image(img)
-    results = YOLO.detect(yolo_image)
+    # Only Look Once at an image
+    loaded = ud.load_scores(image_hash)
 
-    # Prepare the response
-    objects = []
-    for it, result in enumerate(results):
-        an_object = yolo2filestack(result)
-        objects.append(an_object)
+    if loaded is not None:
+        scores = loaded['scores']
+    else:
+        # Nothing is stored
+        yolo_image = Image(img)
+        results = YOLO.detect(yolo_image)
 
-    # JSONified list of detected records
-    out = {'objects' : objects}
+        # Prepare the response
+        objects = []
+        for it, result in enumerate(results):
+            an_object = yolo2filestack(result)
+            objects.append(an_object)
 
-    return jsonify(out)
+        # JSONified list of detected records
+        scores = {'objects' : objects}
+        ud.insert_objects(image_hash, scores)
+
+    return jsonify(scores)
 
 def yolo2filestack(result):
     # Decode the results

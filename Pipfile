@@ -1,0 +1,28 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+name = "pypi"
+verify_ssl = true
+
+
+[dev-packages]
+
+
+
+[requires]
+
+python_version = "3.6"
+
+
+[packages]
+
+cython = "*"
+numpy = "*"
+"yolo34py" = "*"
+darknetpy = "*"
+ipython = "*"
+pillow = "*"
+tensorflow = "==1.5"
+opencv-python = "*"
+matplotlib = "*"
+flask = "*"

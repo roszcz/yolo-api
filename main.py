@@ -1,8 +1,6 @@
 import cv2
 import urllib
-import requests
 import numpy as np
-from io import BytesIO
 from flask import Flask
 from flask import request
 from flask import jsonify
@@ -17,37 +15,45 @@ def get_detector():
     return net
 
 app = Flask(__name__)
-net = get_detector()
+YOLO = get_detector()
 
 @app.route('/objects', methods=['POST'])
 def detect_objects():
+    # Download the image or a random cat picture
     data = request.json
-    default_url = "https://raw.githubusercontent.com/madhawav/darknet/master/data/dog.jpg"
+    default_url = 'http://thecatapi.com/api/images/get?format=src&type=jpg'
     url = data.get('url', default_url)
     resp = urllib.request.urlopen(url)
+
+    # TODO No budget for error handling
     assert resp.code == 200
 
+    # Make it digestible by the YOLO  
     img = np.asarray(bytearray(resp.read()), dtype="uint8")
 
     # TODO Assert that this is RGB ...
     img = cv2.imdecode(img, -1)
 
-    # ... and change to BGR
+    # ... and change to BGR anyway
     img = img[:,:,::-1] 
 
     # There are better ways to do this: e.g. xxhash
+    # May not be worth the struggle for image-sized arrays
     img_hash = hash(img.tostring())
 
+    # Infere
     yolo_image = Image(img)
-    results = net.detect(yolo_image)
+    results = YOLO.detect(yolo_image)
 
+    # Prepare the response
     objects = []
     for it, result in enumerate(results):
-        # key = 'object_{}'.format(it)
         an_object = yolo2filestack(result)
         objects.append(an_object)
 
+    # JSONified list of detected records
     out = {'objects' : objects}
+
     return jsonify(out)
 
 def yolo2filestack(result):
@@ -57,17 +63,21 @@ def yolo2filestack(result):
     x, y, w, h = result[2]
 
     # x, y are centered in the yolo output
-    # filestack uses x1 and y1
+    # filestack uses x1 and y1 ...
     x = x - w/2
-    x = int(x)
-
     y = y - h/2
-    y = int(y)
-
+    # ... and integers
+    x, y = int(x), int(y)
     w, h = int(w), int(h)
 
-    bounding_box = {'x' : x, 'y' : y, 'w' : w, 'h' : h}
+    bounding_box = {
+                    'x' : x,
+                    'y' : y,
+                    'w' : w,
+                    'h' : h
+                   }
 
+    # This is the structure of a single record
     out = {
             'object' : category,
             'confidence' : confidence,

@@ -1,6 +1,4 @@
-import cv2
 import urllib
-import numpy as np
 from flask import Flask
 from flask import request
 from flask import jsonify
@@ -10,7 +8,7 @@ from utils import database as ud
 
 
 app = Flask(__name__)
-YOLO = uy.get_detector()
+YOLO = uy.YOLO()
 
 
 @app.route('/objects', methods=['POST'])
@@ -38,7 +36,7 @@ def detect_objects():
         scores = loaded['scores']
     else:
         # Nothing is stored
-        scores = uy.detect_objects(img)
+        scores = YOLO.detect_objects(img)
 
         # JSONified list of detected records
         ud.insert_objects(image_hash, scores)

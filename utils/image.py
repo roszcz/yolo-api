@@ -1,4 +1,6 @@
+import cv2
 import imagehash
+import numpy as np
 from PIL import Image
 
 def make_hash(img_array):

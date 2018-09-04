@@ -1,29 +1,28 @@
 from pydarknet import Detector, Image
 
 
-def get_detector():
-    net = Detector(bytes("yolo/yolov3.cfg", encoding="utf-8"),
-                   bytes("yolo/yolov3.weights", encoding="utf-8"),
-                   0,
-                   bytes("yolo/coco.data", encoding="utf-8"))
+class YOLO(object):
+    def __init__(self):
+        # https://pjreddie.com/darknet/yolo/
+        self.net = Detector(bytes("yolo/yolov3.cfg", encoding="utf-8"),
+                            bytes("yolo/yolov3.weights", encoding="utf-8"),
+                            0,
+                            bytes("yolo/coco.data", encoding="utf-8"))
 
-    return net
+    def detect_objects(self, img):
+        # Digestable by the darknet
+        yolo_image = Image(img)
+        results = self.net.detect(yolo_image)
 
+        # Prepare the response
+        objects = []
+        for it, result in enumerate(results):
+            an_object = yolo2filestack(result)
+            objects.append(an_object)
 
-def detect_objects(img):
-    # Digestable by the darknet
-    yolo_image = Image(img)
-    results = YOLO.detect(yolo_image)
+        scores = {'objects' : objects}
 
-    # Prepare the response
-    objects = []
-    for it, result in enumerate(results):
-        an_object = yolo2filestack(result)
-        objects.append(an_object)
-
-    scores = {'objects' : objects}
-
-    return scores
+        return scores
 
 
 def yolo2filestack(result):

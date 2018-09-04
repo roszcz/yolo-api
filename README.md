@@ -18,6 +18,13 @@ sudo docker-compose start
 ```
 to start or stop the application.
 
+To run outside the container run:
+```
+pipenv install
+pipenv run python main.py
+```
+
 ### Prerequisites
 
 You need [docker](https://docs.docker.com/install/) and [YOLO](https://pjreddie.com/darknet/yolo/) weights (those will be downloaded when using the `run.sh` script).
+For development you can use [pipenv](https://pipenv.readthedocs.io/en/latest/).

@@ -1,10 +1,10 @@
 # Object Detection API
 
-Simple ML project based on the YOLO network. Build with Flask.
+Simple ML project based on the YOLO network. Built with Flask.
 
 ## Getting started
 
-On Ubuntu just run:
+On Ubuntu run:
 ```
 git clone https://github.com/roszcz/yolo-api.git
 cd yolo-api
